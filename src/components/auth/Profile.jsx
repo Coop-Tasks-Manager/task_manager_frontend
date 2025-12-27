@@ -3,6 +3,11 @@ import { useAuth } from "../../context/AuthContext";
 export default function Profile() {
   const { user, logout } = useAuth();
 
+  const handleLogout = () => {
+    logout(  );
+  };
+
+
   return (
     <div>
       <h2>Profile</h2>
@@ -11,3 +16,4 @@ export default function Profile() {
     </div>
   );
 }
+
