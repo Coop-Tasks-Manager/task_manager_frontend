@@ -12,7 +12,7 @@ const Teams = () => {
   const navigate = useNavigate();
 
   const fetchTeams = async () => {
-    const res = await fetch('http://localhost:5000/api/teams', {
+    const res = await fetch( `${process.env.REACT_APP_API_URL}/teams`, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
     });
     const data = await res.json();
@@ -23,7 +23,7 @@ const Teams = () => {
 
   const handleCreateTeam = async (e) => {
     e.preventDefault();
-    const res = await fetch('http://localhost:5000/api/teams', {
+    const res = await fetch( `${process.env.REACT_APP_API_URL}/teams`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',

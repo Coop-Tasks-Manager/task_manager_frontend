@@ -13,7 +13,7 @@ export default function Boards() {
 
   const fetchBoards = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/boards/${teamId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/boards/${teamId}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       const data = await response.json();
@@ -30,7 +30,7 @@ export default function Boards() {
   const handleCreateBoard = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://localhost:5000/api/boards/${teamId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/boards/${teamId}`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

@@ -47,11 +47,11 @@ const FullDashboard = () => {
     try {
       setLoading(true);
       const headers = { 'Authorization': `Bearer ${token}` };
-      const tasksRes = await fetch(`http://localhost:5000/api/tasks/${boardId}`, { headers });
+      const tasksRes = await fetch(`${process.env.REACT_APP_API_URL}/tasks/${boardId}`, { headers });
       const tasksData = await tasksRes.json();
       setProjects(Array.isArray(tasksData) ? tasksData : []);
 
-      const detailRes = await fetch(`http://localhost:5000/api/boards/details/${boardId}`, { headers });
+      const detailRes = await fetch(`${process.env.REACT_APP_API_URL}/boards/details/${boardId}`, { headers });
       const boardDetail = await detailRes.json();
       setRole(boardDetail.role); 
       setTeamId(boardDetail.team_id);
@@ -66,7 +66,7 @@ const FullDashboard = () => {
 
   const handleStatusUpdate = async (taskId, newStatus) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/tasks/${taskId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -81,7 +81,7 @@ const FullDashboard = () => {
   const handleDeleteTask = async (taskId) => {
     if (!window.confirm("Delete this task?")) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/tasks/${taskId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
@@ -350,14 +350,14 @@ const NewTaskModal = ({ boardId, teamId, onClose, onRefresh }) => {
   });
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/teams/${teamId}/members`, {
+    fetch(`${process.env.REACT_APP_API_URL}/teams/${teamId}/members`, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
     }).then(res => res.json()).then(data => setMembers(Array.isArray(data) ? data : []));
   }, [teamId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch(`http://localhost:5000/api/tasks/${boardId}`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/tasks/${boardId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
       body: JSON.stringify({ ...formData, board_id: boardId })
@@ -409,7 +409,7 @@ const InviteModal = ({ teamId, onClose }) => {
 
   const handleInvite = async (e) => {
     e.preventDefault();
-    const res = await fetch(`http://localhost:5000/api/teams/${teamId}/members`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/teams/${teamId}/members`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
       body: JSON.stringify({ email })

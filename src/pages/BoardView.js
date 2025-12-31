@@ -29,8 +29,8 @@ const FullDashboard = () => {
           'Authorization': `Bearer ${token}`
         };
 
-        // Fetch tasks for the board (Example: http://localhost:5000/api/tasks/4)
-        const res = await fetch(`http://localhost:5000/api/tasks/${boardId}`, { headers });
+        // Fetch tasks for the board 
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/tasks/${boardId}`, { headers });
         
         if (!res.ok) throw new Error("Could not retrieve tasks for this board.");
         
@@ -57,7 +57,7 @@ const FullDashboard = () => {
   // 2. Update Status Logic (Member & Leader)
   const handleStatusUpdate = async (taskId, newStatus) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/tasks/${taskId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
