@@ -1,13 +1,13 @@
-import { LogOut, LayoutGrid, Users, Settings as SettingsIcon } from 'lucide-react';
+import { LogOut, Users, Settings as SettingsIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Sidebar = ({ activePage }) => {
   const navigate = useNavigate();
   
-  const handleLogout = () => {
+/*   const handleLogout = () => {
     localStorage.clear();
     navigate('/login');
-  };
+  }; */
 
   return (
     <aside className="w-64 bg-white border-r hidden md:flex flex-col fixed h-full z-20">

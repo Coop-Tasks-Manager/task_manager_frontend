@@ -6,7 +6,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Teams from "./pages/Teams";      // This acts as your "Teams Dashboard"
 import Boards from "./pages/Boards";    // This shows boards for a specific team
-import BoardView from "./pages/BoardView"; // This is the Kanban/Task view
+//import BoardView from "./pages/BoardView"; // This is the Kanban/Task view
 import Dash from "./pages/Dashboard";   // General stats/Overview if needed
 import Settings from './pages/Settings'; // Import the file you just created
 

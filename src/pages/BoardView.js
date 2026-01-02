@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
-  Briefcase, Search, Bell, Users, ChevronRight, 
-  CheckCircle2, ArrowLeft, Plus, UserPlus, MoreVertical, LayoutGrid, Calendar, AlertCircle
+  Briefcase, Bell, 
+  CheckCircle2, ArrowLeft, Plus, UserPlus, LayoutGrid, Calendar, AlertCircle
 } from 'lucide-react';
 import { useAuth } from "../context/AuthContext";
 
@@ -115,7 +115,7 @@ const FullDashboard = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* 👑 LEADER ONLY ACTIONS */}
+            {/*  LEADER ONLY ACTIONS */}
             {isLeader && (
               <div className="flex items-center gap-2">
                 <button className="flex items-center gap-2 text-gray-500 hover:text-[#00b274] px-3 py-2 rounded-lg text-xs font-bold transition">

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
-  Briefcase, Layers, Users, Target, Settings, Bell, ArrowLeft, Plus, UserPlus, 
-  LayoutGrid, Calendar, AlertCircle, X, LogOut, MoreVertical 
+  Briefcase, Layers, Users, Target, Settings, ArrowLeft, Plus, UserPlus, 
+  LayoutGrid, Calendar,  X, LogOut, MoreVertical 
 } from 'lucide-react';
 import { useAuth } from "../context/AuthContext";
 
@@ -10,6 +10,13 @@ const FullDashboard = () => {
   const { boardId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth(); 
+
+  const [editingTask, setEditingTask] = useState(null);
+  const [boardCount, setBoardCount] = useState(0);
+  const [teamMembersCount, setTeamMembersCount] = useState(0);
+
+
+
 
   const [projects, setProjects] = useState([]);
   const [role, setRole] = useState(null); 
@@ -27,8 +34,8 @@ const FullDashboard = () => {
   const completedTasks = projects.filter(t => t.status === "Done").length;
   const productivity = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
   // Unique members assigned to tasks
-  const uniqueMembers = [...new Set(projects.map(t => t.assigned_to))].filter(Boolean).length;
-  const completedTasks1 = projects.filter(t => t.status?.toLowerCase() === "done").length;
+  //const uniqueMembers = [...new Set(projects.map(t => t.assigned_to))].filter(Boolean).length;
+  //const completedTasks1 = projects.filter(t => t.status?.toLowerCase() === "done").length;
 
   // SVG Math: The circle's circumference is (2 * PI * radius)
   // For a radius of 18, circumference is ~113
@@ -40,6 +47,8 @@ const FullDashboard = () => {
 
   // Calculate how many tasks are done vs the goal
   const goalProgress = Math.min(Math.round((completedTasks / goal) * 100), 100);
+
+  
 
   const fetchBoardData = async () => {
     if (!user || !boardId) return;
@@ -53,14 +62,38 @@ const FullDashboard = () => {
 
       const detailRes = await fetch(`${process.env.REACT_APP_API_URL}/boards/details/${boardId}`, { headers });
       const boardDetail = await detailRes.json();
+      //setBoardCount(Array.isArray(boardDetail) ? boardDetail.length : 0);
+
+       //  Get all boards of the same team
+        const boardsRes = await fetch(
+          `${process.env.REACT_APP_API_URL}/boards/${boardDetail.team_id}`,
+          { headers }
+        );
+        const boardsData = await boardsRes.json();
+        //console.log("Boards Data:", boardsData);
+        setBoardCount(Array.isArray(boardsData) ? boardsData.length : 0);
+
       setRole(boardDetail.role); 
       setTeamId(boardDetail.team_id);
-    } catch (err) {
-      setError("Failed to verify user permissions.");
-    } finally {
-      setLoading(false);
-    }
+
+
+      // Fetch team members count
+      const membersRes = await fetch(
+        `${process.env.REACT_APP_API_URL}/teams/${boardDetail.team_id}/members`,
+        { headers }
+      );
+      const membersData = await membersRes.json();
+      setTeamMembersCount(Array.isArray(membersData) ? membersData.length : 0);
+
+      } catch (err) {
+        setError("Failed to verify user permissions.");
+      } finally {
+        setLoading(false);
+      }
+
   };
+
+
 
   useEffect(() => { fetchBoardData(); }, [boardId, user]);
 
@@ -142,7 +175,7 @@ const FullDashboard = () => {
             </div>
             <div>
               <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Boards</p>
-              <h3 className="text-xl font-black text-[#1e293b]">1</h3> {/* Hardcoded as 1 for MVP board view */}
+              <h3 className="text-xl font-black text-[#1e293b]">{boardCount}</h3> 
             </div>
           </div>
 
@@ -164,7 +197,7 @@ const FullDashboard = () => {
           </div>
           <div>
             <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Team Size</p>
-            <h3 className="text-xl font-black text-[#1e293b]">{uniqueMembers}</h3> {/* Using the variable here */}
+            <h3 className="text-xl font-black text-[#1e293b]">{teamMembersCount}</h3> {/* Using the variable here */}
           </div>
         </div>
 
@@ -268,36 +301,75 @@ const FullDashboard = () => {
                 
                 <div className="space-y-4 min-h-[500px] bg-gray-50/50 p-3 rounded-2xl border border-dashed border-gray-200">
                   {tasks.map(task => (
-                    <div key={task.id} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 group relative">
+
+
+                  <div
+                      key={task.id}
+                      className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 group relative hover:ring-2 hover:ring-[#00b274]/30"
+                    >
                       <div className="flex justify-between mb-3">
                         <span className={`text-[9px] font-black uppercase px-2 py-1 rounded ${task.priority === 'High' ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-blue-500'}`}>
                           {task.priority}
                         </span>
-                        <button onClick={() => setActiveMenu(activeMenu === task.id ? null : task.id)} className="text-gray-300 hover:text-gray-600">
-                          <MoreVertical size={16}/>
+
+                        <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveMenu(activeMenu === task.id ? null : task.id);
+                                }}
+                                className="text-gray-300 hover:text-gray-600"
+                              >
+                                <MoreVertical size={16} />
                         </button>
-                        {activeMenu === task.id && (
-  <div className="absolute right-4 top-12 bg-white shadow-xl rounded-xl border p-2 z-30 min-w-[140px]">
-    {/* Status Move Options - Available to everyone */}
-    <div className="text-[9px] font-black text-gray-400 px-2 py-1 uppercase tracking-widest">Move to</div>
+                        
+         {activeMenu === task.id && (
+  <div className="absolute right-4 top-12 bg-white shadow-xl rounded-xl border p-2 z-30 min-w-[160px]">
+
+    {/* Move Section */}
+    <div className="text-[9px] font-black text-gray-400 px-2 py-1 uppercase tracking-widest">
+      Move to
+    </div>
+
     {['To Do', 'In Progress', 'Done'].map(s => (
-      <button 
-        key={s} 
-        onClick={() => handleStatusUpdate(task.id, s)} 
+      <button
+        key={s}
+        onClick={() => {
+          handleStatusUpdate(task.id, s);
+          setActiveMenu(null);
+        }}
         className={`w-full text-left p-2 text-[10px] font-bold rounded-lg transition-colors ${
-          task.status === s ? 'bg-green-50 text-[#00b274]' : 'hover:bg-gray-50 text-gray-600'
+          task.status === s
+            ? 'bg-green-50 text-[#00b274]'
+            : 'hover:bg-gray-50 text-gray-600'
         }`}
       >
         {s}
       </button>
     ))}
 
-    {/* Leader-only Action Section */}
+    {/* Divider */}
+    <div className="my-1 border-t border-gray-100"></div>
+
+    {/*  EDIT TASK BUTTON */}
+    <button
+      onClick={() => {
+        setEditingTask(task);
+        setActiveMenu(null);
+      }}
+      className="w-full text-left p-2 text-[10px] font-bold text-blue-500 hover:bg-blue-50 rounded-lg"
+    >
+       Edit Task
+    </button>
+
+    {/* Leader-only delete */}
     {isLeader && (
       <>
         <div className="my-1 border-t border-gray-100"></div>
-        <button 
-          onClick={() => handleDeleteTask(task.id)} 
+        <button
+          onClick={() => {
+            handleDeleteTask(task.id);
+            setActiveMenu(null);
+          }}
           className="w-full text-left p-2 text-[10px] font-bold text-red-500 hover:bg-red-50 rounded-lg flex items-center gap-2"
         >
           <X size={12} /> Delete Task
@@ -306,6 +378,7 @@ const FullDashboard = () => {
     )}
   </div>
 )}
+
                       </div>
 
                       <h4 className="text-sm font-bold text-[#1e293b] mb-1">{task.title}</h4>
@@ -334,19 +407,28 @@ const FullDashboard = () => {
 
       {showTaskModal && <NewTaskModal boardId={boardId} teamId={teamId} onClose={() => setShowTaskModal(false)} onRefresh={fetchBoardData} />}
       {showInviteModal && <InviteModal teamId={teamId} onClose={() => setShowInviteModal(false)} />}
+
+        {editingTask && ( <NewTaskModal boardId={boardId} teamId={teamId}
+              task={editingTask}
+              onClose={() => setEditingTask(null)}
+              onRefresh={fetchBoardData}
+              isEdit
+            />
+        )}
     </div>
   );
 };
 
 // --- UPDATED NEW TASK MODAL ---
-const NewTaskModal = ({ boardId, teamId, onClose, onRefresh }) => {
+/* const NewTaskModal = ({ boardId, teamId, onClose, onRefresh }) => { */
+const NewTaskModal = ({ boardId, teamId, task, onClose, onRefresh, isEdit }) => {
   const [members, setMembers] = useState([]);
-  const [formData, setFormData] = useState({ 
-    title: '', 
-    description: '', 
-    priority: 'Medium', 
-    assigned_to: '', 
-    due_date: new Date().toISOString().split('T')[0] 
+  const [formData, setFormData] = useState({
+        title: task?.title || '',
+        description: task?.description || '',
+        priority: task?.priority || 'Medium',
+        assigned_to: task?.assigned_to || '',
+        due_date: task?.due_date?.split('T')[0] || new Date().toISOString().split('T')[0]
   });
 
   useEffect(() => {
@@ -355,36 +437,55 @@ const NewTaskModal = ({ boardId, teamId, onClose, onRefresh }) => {
     }).then(res => res.json()).then(data => setMembers(Array.isArray(data) ? data : []));
   }, [teamId]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/tasks/${boardId}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-      body: JSON.stringify({ ...formData, board_id: boardId })
-    });
-    if (res.ok) { onRefresh(); onClose(); }
-  };
+
+    const handleSubmit = async (e) => {
+          e.preventDefault();
+
+          const url = isEdit
+            ? `${process.env.REACT_APP_API_URL}/tasks/${task.id}`
+            : `${process.env.REACT_APP_API_URL}/tasks/${boardId}`;
+
+          const method = isEdit ? 'PUT' : 'POST';
+
+          const res = await fetch(url, {
+            method,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify(formData)
+          });
+
+          if (res.ok) {
+            onRefresh();
+            onClose();
+          }
+    };
+
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-[2rem] p-8 w-full max-w-md shadow-2xl relative">
         <button onClick={onClose} className="absolute top-6 right-6 text-gray-400 hover:text-gray-600"><X size={20}/></button>
-        <h3 className="text-2xl font-black mb-6 text-[#1e293b]">Create Task</h3>
+        {/* <h3 className="text-2xl font-black mb-6 text-[#1e293b]">Create Task</h3> */}
+        <h3 className="text-2xl font-black mb-6 text-[#1e293b]">
+              {isEdit ? "Edit Task" : "Create Task"}
+        </h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1">
             <label className="text-[10px] font-black uppercase text-gray-400 ml-1">Title</label>
-            <input className="w-full p-4 bg-gray-50 rounded-xl font-bold border-transparent focus:border-[#00b274] outline-none border transition-all" required onChange={e => setFormData({...formData, title: e.target.value})} />
+            <input className="w-full p-4 bg-gray-50 rounded-xl font-bold border-transparent focus:border-[#00b274] outline-none border transition-all" required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
           </div>
 
           {/* ADDED DESCRIPTION FIELD */}
           <div className="space-y-1">
             <label className="text-[10px] font-black uppercase text-gray-400 ml-1">Description</label>
-            <textarea className="w-full p-4 bg-gray-50 rounded-xl font-bold border-transparent focus:border-[#00b274] outline-none border transition-all h-24" onChange={e => setFormData({...formData, description: e.target.value})} placeholder="What needs to be done?" />
+            <textarea className="w-full p-4 bg-gray-50 rounded-xl font-bold border-transparent focus:border-[#00b274] outline-none border transition-all h-24" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="What needs to be done?" />
           </div>
 
           <div className="space-y-1">
             <label className="text-[10px] font-black uppercase text-gray-400 ml-1">Assign Member</label>
-            <select className="w-full p-4 bg-gray-50 rounded-xl font-bold outline-none cursor-pointer" required onChange={e => setFormData({...formData, assigned_to: e.target.value})}>
+            <select className="w-full p-4 bg-gray-50 rounded-xl font-bold outline-none cursor-pointer" required value={formData.assigned_to} onChange={e => setFormData({...formData, assigned_to: e.target.value})}>
               <option value="">Select someone...</option>
               {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
             </select>
@@ -396,17 +497,21 @@ const NewTaskModal = ({ boardId, teamId, onClose, onRefresh }) => {
             </select>
             <input type="date" className="p-4 bg-gray-50 rounded-xl font-bold outline-none" value={formData.due_date} onChange={e => setFormData({...formData, due_date: e.target.value})} />
           </div>
-          <button type="submit" className="w-full py-4 bg-[#00b274] text-white rounded-xl font-black shadow-lg hover:bg-[#009a63] transition-all transform active:scale-95">Add to Board</button>
+          {/* <button type="submit" className="w-full py-4 bg-[#00b274] text-white rounded-xl font-black shadow-lg hover:bg-[#009a63] transition-all transform active:scale-95">Add to Board</button> */}
+          <button type="submit" className="w-full py-4 bg-[#00b274] text-white rounded-xl font-black shadow-lg hover:bg-[#009a63] transition-all">
+            {isEdit ? "Update Task" : "Add to Board"}
+          </button>
+
         </form>
       </div>
     </div>
   );
 };
 
+
 const InviteModal = ({ teamId, onClose }) => {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState({ type: '', message: '' });
-
   const handleInvite = async (e) => {
     e.preventDefault();
     const res = await fetch(`${process.env.REACT_APP_API_URL}/teams/${teamId}/members`, {
@@ -435,10 +540,15 @@ const InviteModal = ({ teamId, onClose }) => {
   );
 };
 
+
+
 const NavItem = ({ icon, label, active, onClick }) => (
   <div onClick={onClick} className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all ${active ? 'bg-green-50 text-[#00b274]' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'}`}>
     {icon} <span className="text-sm font-bold">{label}</span>
   </div>
 );
+
+
+
 
 export default FullDashboard;

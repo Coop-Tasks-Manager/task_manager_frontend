@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layers, ChevronLeft, ArrowRight, Loader2, Plus, X } from 'lucide-react';
 import Sidebar from '../components/Sidebar'; // Ensure this path matches your file structure
@@ -25,7 +25,11 @@ export default function Boards() {
     }
   };
 
-  useEffect(() => { fetchBoards(); }, [teamId]);
+  /* useEffect(() => { fetchBoards(); }, [teamId]); */
+    useEffect(() => {
+    fetchBoards(teamId);
+    }, [fetchBoards, teamId]);
+
 
   const handleCreateBoard = async (e) => {
     e.preventDefault();

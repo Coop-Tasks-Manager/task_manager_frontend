@@ -30,7 +30,7 @@ function Login() {
           </div>
           <h1 className="text-3xl font-bold tracking-tight">TTM</h1>
         </div>
-        <h2 className="text-4xl font-semibold mb-2">Welcome Back</h2>
+        <h2 className="text-4xl font-semibold mb-2"></h2>
         <p className="mt-8 text-center text-sm font-bold text-gray-400">
           Don't have an account?{' '}
           <Link 

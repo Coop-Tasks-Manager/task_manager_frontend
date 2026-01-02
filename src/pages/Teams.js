@@ -76,7 +76,7 @@ const Teams = () => {
           <div 
             key={team.id} 
             onClick={() => {
-              console.log("Team object clicked:", team); // Check the console to see if 'id' exists
+              //console.log("Team object clicked:", team); // Check the console to see if 'id' exists
               if (team.id) {
                 navigate(`/teams/${team.id}/boards`);
               } else {
